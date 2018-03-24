@@ -55,6 +55,7 @@ typedef struct {
 
 #define KOLMO
 
+
 #define MAX_STEP 100000
 
 #define NX 20
@@ -415,17 +416,6 @@ int main(int argc, char** argv)
 
     displace(); /* */
     bc();
-    double diff = 0;
-    //------------------test Lines------------------------------//
-    for(y=1;y<NY+1;y++)
-    {
-    	for(x=1;x<NX+1;x++)
-    	{
-    		diff = diff + v[y][x].vx - vx(p[y][x]);
-    	}
-    }
-    printf("Velocity difference before and after streaming, %ld \n", diff); 
-    //----------------end of test lines----------------------//
     collide();
 
 #ifndef KOLMO
