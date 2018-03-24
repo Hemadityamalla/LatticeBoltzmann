@@ -5,18 +5,18 @@
 cc -O3 lbe2d_reg2.c -o lbe2d_reg2 -lm
 ./lbe2d_reg2
 
-set t = 0
+#set t = 0
 
-while ( $t < 6500 )
+#while ( $t < 6500 )
 
-awk -f amp_kolmo.awk Production_KOLMOGOROV/vel.$t > amp
+#awk -f amp_kolmo.awk Production_KOLMOGOROV/vel.$t > amp
 
-tail -1 amp | awk '{print $1}' >> scaling_kolmo
+#tail -1 amp | awk '{print $1}' >> scaling_kolmo
 
-@ t = $t + 500
+#@ t = $t + 500
 
-end
+#end
 
-\rm amp
-gnuplot scaling_kolmo.gnu
-open scaling.eps
+#\rm amp
+#gnuplot scaling_kolmo.gnu
+#open scaling.eps

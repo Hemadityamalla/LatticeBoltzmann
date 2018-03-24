@@ -53,7 +53,7 @@ typedef struct {
 #define ff 0.00005
 #define tau .6666
 
-#define KOLMO
+//#define KOLMO
 
 
 #define MAX_STEP 100000
@@ -64,6 +64,7 @@ typedef struct {
 #define cs2  (1.0 /  3.0)
 #define cs22 (2.0 *  cs2)
 #define cssq (2.0 /  9.0)
+#define cs4  (1.0 / 9.0)
 
 #define rt0  (4.0 /  9.0)
 #define rt1  (1.0 /  9.0)
@@ -82,7 +83,8 @@ double ff = 8.0*(tau-1.0) * v_max
 */
 
 /* *************** */
-pop p[NY+2][NX+2];
+pop p[NY+2][NX+2], phat[NY+2][NX+2];
+pop p_eq[NY+2][NX+2];
 
 velocity v[NY+2][NX+2];
 velocity vold[NY+2][NX+2];
@@ -185,20 +187,19 @@ void displace()
 
 }
 
-void collide() 
+void compute_feq()
 {
-  int x, y, pp;
-  double u, v;
-  double usq, vsq, u2, v2;
-  double sumsq, sumsq2;
-  double invtau, rho;
-  double ui, vi, uv;
-  pop p_eq;
 
-  invtau = 1.0 / tau;
+	double u, v;
+  	double usq, vsq, u2, v2;
+  	double sumsq, sumsq2;
+  	double rho;
+  	double ui, vi, uv;
+	
+	
   
-  for (y=1; y<NY+1; y++) {
-    for (x=1; x<NX+1; x++) {
+  for (int y=1; y<NY+1; y++) {
+    for (int x=1; x<NX+1; x++) {
 
       rho = m(p[y][x]);
 
@@ -216,20 +217,72 @@ void collide()
       vi = v / cs2;
       uv = ui * vi;
 
-      p_eq.p[0] = rho * rt0 * (1.0 - sumsq);
-      p_eq.p[1] = rho * rt1 * (1.0 - sumsq + u2 + ui);
-      p_eq.p[2] = rho * rt1 * (1.0 - sumsq + v2 + vi);
-      p_eq.p[3] = rho * rt1 * (1.0 - sumsq + u2 - ui);
-      p_eq.p[4] = rho * rt1 * (1.0 - sumsq + v2 - vi);
-      p_eq.p[5] = rho * rt2 * (1.0 + sumsq2 + ui + vi + uv);
-      p_eq.p[6] = rho * rt2 * (1.0 + sumsq2 - ui + vi - uv);
-      p_eq.p[7] = rho * rt2 * (1.0 + sumsq2 - ui - vi + uv);
-      p_eq.p[8] = rho * rt2 * (1.0 + sumsq2 + ui - vi - uv);
+      p_eq[y][x].p[0] = rho * rt0 * (1.0 - sumsq);
+      p_eq[y][x].p[1] = rho * rt1 * (1.0 - sumsq + u2 + ui);
+      p_eq[y][x].p[2] = rho * rt1 * (1.0 - sumsq + v2 + vi);
+      p_eq[y][x].p[3] = rho * rt1 * (1.0 - sumsq + u2 - ui);
+      p_eq[y][x].p[4] = rho * rt1 * (1.0 - sumsq + v2 - vi);
+      p_eq[y][x].p[5] = rho * rt2 * (1.0 + sumsq2 + ui + vi + uv);
+      p_eq[y][x].p[6] = rho * rt2 * (1.0 + sumsq2 - ui + vi - uv);
+      p_eq[y][x].p[7] = rho * rt2 * (1.0 + sumsq2 - ui - vi + uv);
+      p_eq[y][x].p[8] = rho * rt2 * (1.0 + sumsq2 + ui - vi - uv);
+	}
+	}	
 
-      for (pp=0; pp<9; pp++)
-	p[y][x].p[pp] = p[y][x].p[pp] - invtau * (p[y][x].p[pp] - p_eq.p[pp]);
-    }  
-  }
+}
+
+void compute_2regterm()
+{
+
+	double phix,phiy,phixy;
+	pop p_neq;
+  
+  	for (int y=1; y<NY+1; y++) {
+  	  for (int x=1; x<NX+1; x++) {
+  	  	
+  	  	for(int q=0;q<9;q++)
+  	  	{
+  	  		p_neq.p[q] = p[y][x].p[q] - p_eq[y][x].p[q];
+  	  	}
+  	  	
+  	  	phix  = m(p_neq) - p_neq.p[2] - p_neq.p[4];
+  	  	phiy  = m(p_neq) - p_neq.p[1] - p_neq.p[3];
+  	  	phixy = p_neq.p[5] - p_neq.p[6] + p_neq.p[7] - p_neq.p[8];
+  	  	
+  	  	  
+  	    phat[y][x].p[0] = (rt0/cssq*cs4) * ((-1.0*cs2)*phix  + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[1] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[2] = (rt1/cssq*cs4) * ((-1.0*cs2)*phix  + (1.0 - cs2)*phiy);
+  	    phat[y][x].p[3] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[4] = (rt1/cssq*cs4) * ((-1.0*cs2)*phix  + (1.0 - cs2)*phiy);
+  	    phat[y][x].p[5] = (rt2/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy + 2.0*phixy);
+  	    phat[y][x].p[6] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy - 2.0*phixy);
+  	    phat[y][x].p[7] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy + 2.0*phixy);
+  	    phat[y][x].p[8] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy - 2.0*phixy);
+		}
+	}
+}
+
+
+
+void collide() 
+{
+	double invtau;  
+	invtau = 1.0 / tau;
+	
+	for(int y=1;y<NY+1;y++)
+	{
+		for(int x=1;x<NX+1;x++)
+		{
+			for(int pp=0;pp<9;pp++)
+			{
+				p[y][x].p[pp] = p_eq[y][x].p[pp] + (1.0 - invtau)*phat[y][x].p[pp];//Yet to add the force term here
+			}
+		}
+	}
+	
+      
+
 }
 
 void init() 
@@ -416,6 +469,8 @@ int main(int argc, char** argv)
 
     displace(); /* */
     bc();
+    compute_feq();
+    compute_2regterm();
     collide();
 
 #ifndef KOLMO
