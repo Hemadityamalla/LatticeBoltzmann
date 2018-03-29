@@ -53,7 +53,7 @@ typedef struct {
 #define ff 0.00005
 #define tau .6666
 
-#define KOLMO
+//#define KOLMO
 
 
 #define MAX_STEP 100000

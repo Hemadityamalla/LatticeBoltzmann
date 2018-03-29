@@ -1,6 +1,11 @@
-#!/bin/tcsh
-
-\rm scaling_kolmo
+#!/bin/bash
+if [ -e Production_POISEUILLE ]
+then
+	echo "Previous run files being deleted"
+	rm -rf Production_*
+else
+	echo "nok"
+fi
 
 gcc -std=c99 -O3 lbe2d_reg2.c -o lbe2d_reg2 -lm
 ./lbe2d_reg2

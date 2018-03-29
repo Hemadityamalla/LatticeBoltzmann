@@ -53,10 +53,10 @@ typedef struct {
 //#define ff 0.00005
 #define tau .6666
 
-#define KOLMO
+//#define KOLMO
 
 
-#define MAX_STEP 100000
+#define MAX_STEP 10000
 
 #define NX 20
 #define NY 50
@@ -246,20 +246,22 @@ void compute_2regterm()
   	  		p_neq.p[q] = p[y][x].p[q] - p_eq[y][x].p[q];
   	  	}
   	  	
-  	  	phix  = m(p_neq) - p_neq.p[2] - p_neq.p[4];
-  	  	phiy  = m(p_neq) - p_neq.p[1] - p_neq.p[3];
+  	  	phix  = m(p_neq) - p_neq.p[2] - p_neq.p[4] - p_neq.p[0];
+  	  	phiy  = m(p_neq) - p_neq.p[1] - p_neq.p[3] - p_neq.p[0];
   	  	phixy = p_neq.p[5] - p_neq.p[6] + p_neq.p[7] - p_neq.p[8];
   	  	
   	  	  
-  	    phat[y][x].p[0] = (rt0/cssq*cs4) * ((-1.0*cs2)*phix  + (-1.0*cs2)*phiy);
-  	    phat[y][x].p[1] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (-1.0*cs2)*phiy);
-  	    phat[y][x].p[2] = (rt1/cssq*cs4) * ((-1.0*cs2)*phix  + (1.0 - cs2)*phiy);
-  	    phat[y][x].p[3] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (-1.0*cs2)*phiy);
-  	    phat[y][x].p[4] = (rt1/cssq*cs4) * ((-1.0*cs2)*phix  + (1.0 - cs2)*phiy);
-  	    phat[y][x].p[5] = (rt2/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy + 2.0*phixy);
-  	    phat[y][x].p[6] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy - 2.0*phixy);
-  	    phat[y][x].p[7] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy + 2.0*phixy);
-  	    phat[y][x].p[8] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy - 2.0*phixy);
+  	  	 
+  	    phat[y][x].p[0] = (rt0/cssq*cs4) * ((-1.0*cs4)*phix  + (-1.0*cs4)*phiy);
+  	    phat[y][x].p[1] = (rt1/cssq*cs4) * ((1.0 - cs4)*phix + (-1.0*cs4)*phiy);
+  	    phat[y][x].p[2] = (rt1/cssq*cs4) * ((-1.0*cs4)*phix  + (1.0 - cs4)*phiy);
+  	    phat[y][x].p[3] = (rt1/cssq*cs4) * ((1.0 - cs4)*phix + (-1.0*cs4)*phiy);
+  	    phat[y][x].p[4] = (rt1/cssq*cs4) * ((-1.0*cs4)*phix  + (1.0 - cs4)*phiy);
+  	    phat[y][x].p[5] = (rt2/cssq*cs4) * ((1.0 - cs4)*phix + (1.0 - cs4)*phiy + 2.0*phixy);
+  	    phat[y][x].p[6] = (rt2/cssq*cs4) * ((1.0 - cs4)*phix + (1.0 - cs4)*phiy - 2.0*phixy);
+  	    phat[y][x].p[7] = (rt2/cssq*cs4) * ((1.0 - cs4)*phix + (1.0 - cs4)*phiy + 2.0*phixy);
+  	    phat[y][x].p[8] = (rt2/cssq*cs4) * ((1.0 - cs4)*phix + (1.0 - cs4)*phiy - 2.0*phixy);
+  	    
 		}
 	}
 }
@@ -277,8 +279,8 @@ void collide()
 		{
 			for(int pp=0;pp<9;pp++)
 			{
-				//p[y][x].p[pp] = p_eq[y][x].p[pp] + (1.0 - invtau)*phat[y][x].p[pp];
-				p[y][x].p[pp] = p[y][x].p[pp] - invtau * (p[y][x].p[pp] - p_eq[y][x].p[pp]);
+				p[y][x].p[pp] = p_eq[y][x].p[pp] + (1.0 - invtau)*phat[y][x].p[pp];
+				//p[y][x].p[pp] = p[y][x].p[pp] - invtau * (p[y][x].p[pp] - p_eq[y][x].p[pp]);//Without using the regularization
 			}
 		}
 	}
@@ -437,14 +439,26 @@ int main(int argc, char** argv)
     /* fprintf(stderr,"time step %d\n",i); */
     
     bc();    
-    
-    for (y=1; y<NY+1; y++) 
+    //printf("Timestep: %d \n",i);
+    for (y=1; y<NY+1; y++){ 
       for (x=1; x<NX+1; x++) {
 	v[y][x].vx = vx(p[y][x]);
 	v[y][x].vy = vy(p[y][x]);
       }
+     }
+    //--------------Print p----------------
+    /*for (y=1; y<NY+1; y++){ 
+      for (x=1; x<NX+1; x++) {
+      		printf("p at (%d,%d): \t",x,y);
+      		for(int q = 0;q<9;q++)
+      			printf("%g \t",p[y][x].p[q]);
+      		printf("\n");
+      		
+	   }
+	 } */
     
-    if (i%500 == 0) {
+    
+    if (i%250 == 0) {
       error = 0.0;
       for (y=1; y<NY+1; y++) 
 	for (x=1; x<NX+1; x++) {
@@ -461,10 +475,10 @@ int main(int argc, char** argv)
 	exit(1);
       }
       
-      if (v[1][1].vx > 1e4){
+      /*if (v[1][1].vx > 1e4){
       	fprintf(stderr,"Solution Diverging!\n");
       	exit(1);
-      	}
+      	}*/
       
       write_pop(i);    
 
@@ -477,10 +491,55 @@ int main(int argc, char** argv)
     }
 
     displace(); /* */
+
     bc();
+        /*printf("Before Collison!---------------\n");
+        //--------------Print p----------------
+    for (y=1; y<NY+1; y++){ 
+      for (x=1; x<NX+1; x++) {
+      		printf("p at (%d,%d): \t",x,y);
+      		for(int q = 0;q<9;q++)
+      			printf("%g \t",p[y][x].p[q]);
+      		printf("\n");
+      		
+	   }
+	 } */
     compute_feq();
-    //compute_2regterm();
+    /*printf("printing feq!---------------\n");
+        //--------------Print p----------------
+    for (y=1; y<NY+1; y++){ 
+      for (x=1; x<NX+1; x++) {
+      		printf("p at (%d,%d): \t",x,y);
+      		for(int q = 0;q<9;q++)
+      			printf("%g \t",p_eq[y][x].p[q]);
+      		printf("\n");
+      		
+	   }
+	 }*/ 
+    compute_2regterm();
+        /*printf("f_reg!---------------\n");
+        //--------------Print p----------------
+    for (y=1; y<NY+1; y++){ 
+      for (x=1; x<NX+1; x++) {
+      		printf("p at (%d,%d): \t",x,y);
+      		for(int q = 0;q<9;q++)
+      			printf("%g \t",phat[y][x].p[q]);
+      		printf("\n");
+      		
+	   }
+	 } */
     collide();
+        /*printf("After collison!---------------\n");
+        //--------------Print p----------------
+    for (y=1; y<NY+1; y++){ 
+      for (x=1; x<NX+1; x++) {
+      		printf("p at (%d,%d): \t",x,y);
+      		for(int q = 0;q<9;q++)
+      			printf("%g \t",p[y][x].p[q]);
+      		printf("\n");
+      		
+	   }
+	 }*/ 
 
 /*#ifndef KOLMO
     force(); 
