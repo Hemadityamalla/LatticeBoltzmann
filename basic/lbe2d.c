@@ -50,7 +50,7 @@ typedef struct {
   double vx, vy;
 } velocity;
 
-#define ff 0.00005
+#define ff 0.000005
 #define tau .6666
 
 //#define KOLMO
@@ -358,6 +358,22 @@ void write_pop(int tstep)
     fprintf(fout,"\n");
   }
   fclose(fout);
+  
+      /* Here dumps the velprofile field */
+  sprintf(fname,"%s/velprofile.%d",OutDir,tstep);
+  fout = fopen(fname,"w");
+  
+    for (y=1; y<NY+1; y++){
+      double tvx,tvy;
+      tvx = (vx(p[y][25])/m(p[y][25]));
+      tvy = (vy(p[y][25])/m(p[y][25]));  
+      fprintf(fout,"%d %d %g\n", 25, y, tvx,tvy);
+	      }
+    fprintf(fout,"\n");
+  
+  fclose(fout);
+  
+  
 }
 
 int main(int argc, char** argv)

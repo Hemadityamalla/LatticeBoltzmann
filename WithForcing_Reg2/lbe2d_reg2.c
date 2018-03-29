@@ -56,7 +56,7 @@ typedef struct {
 //#define KOLMO
 
 
-#define MAX_STEP 10000
+#define MAX_STEP 100000
 
 #define NX 20
 #define NY 50
@@ -85,7 +85,7 @@ double ff = 8.0*(tau-1.0) * v_max
 /* *************** */
 pop p[NY+2][NX+2], phat[NY+2][NX+2];
 pop p_eq[NY+2][NX+2];
-double force[2] = {0.00005,0.0};
+double force[2] = {0.000005,0.0};
 
 velocity v[NY+2][NX+2];
 velocity vold[NY+2][NX+2];
@@ -252,15 +252,24 @@ void compute_2regterm()
   	  	
   	  	  
   	  	 
-  	    phat[y][x].p[0] = (rt0/cssq*cs4) * ((-1.0*cs4)*phix  + (-1.0*cs4)*phiy);
-  	    phat[y][x].p[1] = (rt1/cssq*cs4) * ((1.0 - cs4)*phix + (-1.0*cs4)*phiy);
-  	    phat[y][x].p[2] = (rt1/cssq*cs4) * ((-1.0*cs4)*phix  + (1.0 - cs4)*phiy);
-  	    phat[y][x].p[3] = (rt1/cssq*cs4) * ((1.0 - cs4)*phix + (-1.0*cs4)*phiy);
-  	    phat[y][x].p[4] = (rt1/cssq*cs4) * ((-1.0*cs4)*phix  + (1.0 - cs4)*phiy);
-  	    phat[y][x].p[5] = (rt2/cssq*cs4) * ((1.0 - cs4)*phix + (1.0 - cs4)*phiy + 2.0*phixy);
-  	    phat[y][x].p[6] = (rt2/cssq*cs4) * ((1.0 - cs4)*phix + (1.0 - cs4)*phiy - 2.0*phixy);
-  	    phat[y][x].p[7] = (rt2/cssq*cs4) * ((1.0 - cs4)*phix + (1.0 - cs4)*phiy + 2.0*phixy);
-  	    phat[y][x].p[8] = (rt2/cssq*cs4) * ((1.0 - cs4)*phix + (1.0 - cs4)*phiy - 2.0*phixy);
+  	    /*phat[y][x].p[0] = (rt0/cssq*cs4) * ((-1.0*cs2)*phix  + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[1] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[2] = (rt1/cssq*cs4) * ((-1.0*cs2)*phix  + (1.0 - cs2)*phiy);
+  	    phat[y][x].p[3] = (rt1/cssq*cs4) * ((1.0 - cs2)*phix + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[4] = (rt1/cssq*cs4) * ((-1.0*cs2)*phix  + (1.0 - cs2)*phiy);
+  	    phat[y][x].p[5] = (rt2/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy + 2.0*phixy);
+  	    phat[y][x].p[6] = (rt2/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy - 2.0*phixy);
+  	    phat[y][x].p[7] = (rt2/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy + 2.0*phixy);
+  	    phat[y][x].p[8] = (rt2/cssq*cs4) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy - 2.0*phixy);*/
+  	    phat[y][x].p[0] = (rt0/cssq) * ((-1.0*cs2)*phix  + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[1] = (rt1/cssq) * ((1.0 - cs2)*phix + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[2] = (rt1/cssq) * ((-1.0*cs2)*phix  + (1.0 - cs2)*phiy);
+  	    phat[y][x].p[3] = (rt1/cssq) * ((1.0 - cs2)*phix + (-1.0*cs2)*phiy);
+  	    phat[y][x].p[4] = (rt1/cssq) * ((-1.0*cs2)*phix  + (1.0 - cs2)*phiy);
+  	    phat[y][x].p[5] = (rt2/cssq) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy + 2.0*phixy);
+  	    phat[y][x].p[6] = (rt2/cssq) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy - 2.0*phixy);
+  	    phat[y][x].p[7] = (rt2/cssq) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy + 2.0*phixy);
+  	    phat[y][x].p[8] = (rt2/cssq) * ((1.0 - cs2)*phix + (1.0 - cs2)*phiy - 2.0*phixy);
   	    
 		}
 	}
@@ -417,6 +426,35 @@ void write_pop(int tstep)
     fprintf(fout,"\n");
   }
   fclose(fout);
+  
+    /* Here dumps the density field */
+  sprintf(fname,"%s/density.%d",OutDir,tstep);
+  fout = fopen(fname,"w");
+  for (y=1; y<NY+1; y++) {
+    for (x=1; x<NX+1; x++){
+      //double tvx,tvy;
+      //tvx = (vx(p[y][x])/m(p[y][x]) + 0.5*force[0]);
+      //tvy = (vy(p[y][x])/m(p[y][x]) + 0.5*force[1]);  
+      fprintf(fout,"%d %d %g\n", x, y, m(p[y][x]));
+	      }
+    fprintf(fout,"\n");
+  }
+  fclose(fout);
+  
+    /* Here dumps the velprofile field */
+  sprintf(fname,"%s/velprofile.%d",OutDir,tstep);
+  fout = fopen(fname,"w");
+  
+    for (y=1; y<NY+1; y++){
+      double tvx,tvy;
+      tvx = (vx(p[y][25])/m(p[y][25]) + 0.5*force[0]);
+      tvy = (vy(p[y][25])/m(p[y][25]) + 0.5*force[1]);  
+      fprintf(fout,"%d %d %g\n", 25, y, tvx,tvy);
+	      }
+    fprintf(fout,"\n");
+  
+  fclose(fout);
+  
 }
 
 int main(int argc, char** argv)
