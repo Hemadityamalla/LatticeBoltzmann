@@ -1,0 +1,58 @@
+
+
+*******************************************************************************
+Tue Apr  3 12:26:51 2018
+
+
+FIT:    data read from 'velprofile_fshift.12000' using 2:3
+        format = x:z
+        x range restricted to [1.00000 : 50.0000]
+        #datapoints = 50
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a*x*x + b*x + c
+fitted parameters initialized with current variable values
+
+iter      chisq       delta/lim  lambda   a             b             c            
+   0 6.9047891828e+07   0.00e+00  6.62e+02    1.000000e+00   1.000000e+00   1.000000e+00
+   7 6.4317203412e-08  -1.84e-06  6.62e-05   -4.157219e-05   2.120182e-03  -9.483551e-04
+
+After 7 iterations the fit converged.
+final sum of squares of residuals : 6.43172e-08
+rel. change during last iteration : -1.84054e-11
+
+degrees of freedom    (FIT_NDF)                        : 47
+rms of residuals      (FIT_STDFIT) = sqrt(WSSR/ndf)    : 3.69926e-05
+variance of residuals (reduced chisquare) = WSSR/ndf   : 1.36845e-09
+
+Final set of parameters            Asymptotic Standard Error
+=======================            ==========================
+a               = -4.15722e-05     +/- 2.81e-08     (0.0676%)
+b               = 0.00212018       +/- 1.478e-06    (0.06973%)
+c               = -0.000948355     +/- 1.634e-05    (1.723%)
+
+correlation matrix of the fit parameters:
+                a      b      c      
+a               1.000 
+b              -0.969  1.000 
+c               0.760 -0.876  1.000 
+
+
+*******************************************************************************
+Tue Apr  3 12:26:51 2018
+
+
+FIT:    data read from 'velprofile_with_fshift_reg.10250' using 2:3
+        format = x:z
+        x range restricted to [1.00000 : 50.0000]
+        #datapoints = 50
+        residuals are weighted equally (unit weight)
+
+function used for fitting: f(x)
+	f(x) = a*x*x + b*x + c
+fitted parameters initialized with current variable values
+
+iter      chisq       delta/lim  lambda   d             e             f            
+   0 2.3224994372e-03   0.00e+00  0.00e+00    1.000000e+00   1.000000e+00   1.000000e+00
+BREAK: Singular matrix in Givens()

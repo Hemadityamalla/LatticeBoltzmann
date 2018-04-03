@@ -1,0 +1,9 @@
+#Parameters used to compare federico's forcing and forcing with shifting and  regularization
+
+NX = 20
+NY = 50
+f = {0.000005,0.0}
+tau = {.6666}
+Max Iterations used = 1000000
+Number of timesteps taken to converge > 12000 without reg, 10250 with reg
+xVelProf = 15

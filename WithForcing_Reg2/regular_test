@@ -1,10 +1,11 @@
 #!/bin/bash
 if [ -e Production_POISEUILLE ]
 then
-	echo "Previous run files being deleted"
+	echo "Previous run files being deleted.............."
 	rm -rf Production_*
+	rm lbe2d_reg2
 else
-	echo "nok"
+	echo "No Previous files"
 fi
 
 gcc -std=c99 -O3 lbe2d_reg2.c -o lbe2d_reg2 -lm

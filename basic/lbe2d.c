@@ -50,13 +50,13 @@ typedef struct {
   double vx, vy;
 } velocity;
 
-#define ff 0.000005
-#define tau .6666
+#define ff 0.00005
+#define tau 0.666
 
 //#define KOLMO
 
 
-#define MAX_STEP 100000
+#define MAX_STEP 1000000
 
 #define NX 20
 #define NY 50
@@ -82,10 +82,11 @@ double ff = 8.0*(tau-1.0) * v_max
 */
 
 /* *************** */
-pop p[NY+2][NX+2];
+pop p[NY+2][NX+2],p_eq[NY+2][NX+2];
 
 velocity v[NY+2][NX+2];
 velocity vold[NY+2][NX+2];
+int dirFlag = 1;
 
 pop pzero;
 
@@ -138,6 +139,7 @@ void bc()
     p[NY+1][x ].p[4] = p[NY][x].p[2]; 
     p[NY+1][xm].p[8] = p[NY][x].p[6]; 
     p[NY+1][xp].p[7] = p[NY][x].p[5]; 
+    
   }
 
   /* Periodic bc along x */
@@ -193,14 +195,14 @@ void collide()
   double sumsq, sumsq2;
   double invtau, rho;
   double ui, vi, uv;
-  pop p_eq;
+  //pop p_eq;
 
   invtau = 1.0 / tau;
   
   for (y=1; y<NY+1; y++) {
     for (x=1; x<NX+1; x++) {
 
-      rho = m(p[y][x]);
+      /*rho = m(p[y][x]);
 
       u = vx(p[y][x]) / rho;
       v = vy(p[y][x]) / rho;
@@ -224,13 +226,62 @@ void collide()
       p_eq.p[5] = rho * rt2 * (1.0 + sumsq2 + ui + vi + uv);
       p_eq.p[6] = rho * rt2 * (1.0 + sumsq2 - ui + vi - uv);
       p_eq.p[7] = rho * rt2 * (1.0 + sumsq2 - ui - vi + uv);
-      p_eq.p[8] = rho * rt2 * (1.0 + sumsq2 + ui - vi - uv);
+      p_eq.p[8] = rho * rt2 * (1.0 + sumsq2 + ui - vi - uv);*/
 
       for (pp=0; pp<9; pp++)
-	p[y][x].p[pp] = p[y][x].p[pp] - invtau * (p[y][x].p[pp] - p_eq.p[pp]);
+	p[y][x].p[pp] = p[y][x].p[pp] - invtau * (p[y][x].p[pp] - p_eq[y][x].p[pp]);
     }  
   }
 }
+
+void compute_feq()
+{
+
+	double u, v;
+  	double usq, vsq, u2, v2;
+  	double sumsq, sumsq2;
+  	double rho;
+  	double ui, vi, uv;
+	
+	
+  
+  for (int y=1; y<NY+1; y++) {
+    for (int x=1; x<NX+1; x++) {
+
+      rho = m(p[y][x]);
+
+      u = (vx(p[y][x]) / rho) ;
+      v = (vy(p[y][x]) / rho) ;
+      usq = u * u;
+      vsq = v * v;
+
+      sumsq  = (usq + vsq) / cs22;
+      sumsq2 = sumsq * (1.0 - cs2) / cs2;
+      u2 = usq / cssq;
+      v2 = vsq / cssq;
+
+      ui = u / cs2;
+      vi = v / cs2;
+      uv = ui * vi;
+
+      p_eq[y][x].p[0] = rho * rt0 * (1.0 - sumsq);
+      p_eq[y][x].p[1] = rho * rt1 * (1.0 - sumsq + u2 + ui);
+      p_eq[y][x].p[2] = rho * rt1 * (1.0 - sumsq + v2 + vi);
+      p_eq[y][x].p[3] = rho * rt1 * (1.0 - sumsq + u2 - ui);
+      p_eq[y][x].p[4] = rho * rt1 * (1.0 - sumsq + v2 - vi);
+      p_eq[y][x].p[5] = rho * rt2 * (1.0 + sumsq2 + ui + vi + uv);
+      p_eq[y][x].p[6] = rho * rt2 * (1.0 + sumsq2 - ui + vi - uv);
+      p_eq[y][x].p[7] = rho * rt2 * (1.0 + sumsq2 - ui - vi + uv);
+      p_eq[y][x].p[8] = rho * rt2 * (1.0 + sumsq2 + ui - vi - uv);
+	}
+	}	
+
+}
+
+
+
+
+
 
 void init() 
 {
@@ -318,7 +369,10 @@ void write_pop(int tstep)
   if(!check){
     fprintf(stderr,"Directory Production_KOLMOGOROV created. \n");
   }else{
-    fprintf(stderr,"Directory Production_KOLMOGOROV already exsist!\n");
+  	if (dirFlag == 1){
+    	fprintf(stderr,"Directory Production_KOLMOGOROV already exsist!\n");
+    	dirFlag = 0;
+    }
   }
 #else
   sprintf(OutDir, "Production_POISEUILLE");
@@ -326,7 +380,10 @@ void write_pop(int tstep)
   if(!check){
     fprintf(stderr,"Directory Production_POISEUILLE created. \n");
   }else{
-    fprintf(stderr,"Directory Production_POISEUILLE already exsist!\n");
+  	if (dirFlag == 1){
+    	fprintf(stderr,"Directory Production_POISEUILLE already exsist!\n");
+    	dirFlag = 0;
+    }
   }
 #endif
 
@@ -359,18 +416,31 @@ void write_pop(int tstep)
   }
   fclose(fout);
   
-      /* Here dumps the velprofile field */
+      /*Here dumps the velprofile field */
   sprintf(fname,"%s/velprofile.%d",OutDir,tstep);
   fout = fopen(fname,"w");
   
     for (y=1; y<NY+1; y++){
       double tvx,tvy;
-      tvx = (vx(p[y][25])/m(p[y][25]));
-      tvy = (vy(p[y][25])/m(p[y][25]));  
-      fprintf(fout,"%d %d %g\n", 25, y, tvx,tvy);
+      tvx = vx(p[y][15])/m(p[y][15]);
+      tvy = vy(p[y][15])/m(p[y][15]);  
+      fprintf(fout,"%d %d %g\n", 15, y, tvx,tvy);
 	      }
     fprintf(fout,"\n");
+  fclose(fout);
   
+      /* Here dumps the density field */
+  sprintf(fname,"%s/density.%d",OutDir,tstep);
+  fout = fopen(fname,"w");
+  for (y=1; y<NY+1; y++) {
+    for (x=1; x<NX+1; x++){
+      //double tvx,tvy;
+      //tvx = (vx(p[y][x])/m(p[y][x]) + 0.5*force[0]);
+      //tvy = (vy(p[y][x])/m(p[y][x]) + 0.5*force[1]);  
+      fprintf(fout,"%d %d %g\n", x, y, m(p[y][x]));
+	      }
+    fprintf(fout,"\n");
+  }
   fclose(fout);
   
   
@@ -394,7 +464,7 @@ int main(int argc, char** argv)
   fmass = fopen("mass.dat","w");
   for (i=0; i<MAX_STEP; i++) {
     /* fprintf(stderr,"time step %d\n",i); */
-    
+    //printf("Time Step: %d \n",i);
     bc();    
     
     for (y=1; y<NY+1; y++) 
@@ -403,12 +473,12 @@ int main(int argc, char** argv)
 	v[y][x].vy = vy(p[y][x]);
       }
     
-    if (i%500 == 0) {
+    if (i%250 == 0) {
       error = 0.0;
       for (y=1; y<NY+1; y++) 
 	for (x=1; x<NX+1; x++) {
-	  tmpx = v[y][x].vx - vold[y][x].vx;
-	  tmpy = v[y][x].vy - vold[y][x].vy;
+	  tmpx = (v[y][x].vx - vold[y][x].vx);///vold[y][x].vx;
+	  tmpy = (v[y][x].vy - vold[y][x].vy);///vold[y][x].vy;
 	  
 	  error += (tmpx * tmpx + tmpy * tmpy);
 	}
@@ -432,6 +502,7 @@ int main(int argc, char** argv)
 
     displace(); /* */
     bc();
+    compute_feq();
     collide();
 
 #ifndef KOLMO
@@ -445,7 +516,7 @@ int main(int argc, char** argv)
       }
 
   } /* for i */
-
+  printf("Max Iterations Done! \n");
   fclose(ferr);
   fclose(fmass);
   exit(1);

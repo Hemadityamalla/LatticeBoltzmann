@@ -2,6 +2,15 @@
 
 \rm scaling_kolmo
 
+#if [ -e Production_POISEUILLE ]
+#then
+#	echo "Previous run files being deleted"
+#	rm -rf Production_*
+#else
+#	echo "No Previous files"
+#fi
+
+rm lbe2d
 cc -O3 lbe2d.c -o lbe2d -lm
 ./lbe2d
 
