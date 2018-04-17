@@ -50,17 +50,17 @@ typedef struct {
   double vx, vy;
 } velocity;
 
-#define ff 4.87e-8//0.00005
-#define tau 35.15//0.666
+#define ff 0.00005
+#define tau 22.17//0.666
 
-//#define KOLMO
+#define KOLMO
 
 
 #define MAX_STEP 1000000
 
-#define NX 20
-#define NY 40
-#define Uo 1.0 //Only used for kolmogorov
+#define NX 181
+#define NY 181
+#define Uo 1.0
 
 
 #define cs2  (1.0 /  3.0)
@@ -289,11 +289,11 @@ void init()
 {
   int x, y, pp;
   double rho, pi=3.141592;
-  double u, v, usq, vsq, u2, v2;
+  double u, v, usq, vsq, u2, v2,urot,vrot;
   double ui, vi, sumsq, sumsq2, uv;
   
-  u = 0.0; /* vx */
-  v = 0.0; /* vy */
+  urot = 0.0; /* vx */
+  vrot = 0.0; /* vy */
     
 #ifdef KOLMO
 
@@ -301,7 +301,9 @@ void init()
   for (y=1; y<NY+1; y++){
     for (x=1; x<NX+1; x++) {
 
-      u = Uo*sin(2.0*pi*y/(double) NY);
+      urot = Uo*sin(2.0*pi*y/(double) NY);
+ 	  u = urot*cos(-0.25*pi) + vrot*sin(-0.25*pi);
+      v = urot*sin(-0.25*pi) + vrot*cos(-0.25*pi);
  
       usq = u * u;
       vsq = v * v;
@@ -492,7 +494,7 @@ int main(int argc, char** argv)
 	v[y][x].vy = vy(p[y][x]);
       }
     
-    if (i%1 == 0) {
+    if (i%50 == 0) {
 		error = 0.0;
       	for (y=1; y<NY+1; y++) 
 			for (x=1; x<NX+1; x++) {
@@ -506,12 +508,12 @@ int main(int argc, char** argv)
 	  
 	  			error += (tmpx * tmpx + tmpy * tmpy);
 			}
-	  fprintf(velAmp,"%d %g\n",i,v[32][10]);
+	  fprintf(velAmp,"%d %g %g\n",i,v[32][10].vx/m(p[32][10]),v[32][10].vy/m(p[32][10]));
 	  fflush(velAmp);
       fprintf(ferr,"%d %g\n",i,error);
       fflush(ferr);
 
-      if ((error < 10e-16) && (i!=0)) {
+      if ((error < 10e-11) && (i!=0)) {
         fprintf(stderr,"Run termalized\n");
 	exit(1);
       }

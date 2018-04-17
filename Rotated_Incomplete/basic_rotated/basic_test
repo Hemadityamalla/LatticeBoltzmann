@@ -1,6 +1,6 @@
 #!/bin/bash
-if [ -e Production_POISEUILLE ]
-#if [ -e Production_KOLMOGOROV ]
+#if [ -e Production_Poiseuille]
+if [ -e Production_KOLMOGOROV ]
 then
 	echo "Previous run files being deleted.............."
 	rm -rf Production_*

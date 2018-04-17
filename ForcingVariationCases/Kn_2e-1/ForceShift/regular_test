@@ -1,15 +1,15 @@
 #!/bin/bash
 if [ -e Production_POISEUILLE ]
-#if [ -e Production_KOLMOGOROV ]
 then
 	echo "Previous run files being deleted.............."
 	rm -rf Production_*
+	rm lbe2d_reg2
 else
 	echo "No Previous files"
 fi
 
-gcc -std=c99 -O3 lbe2d.c -o lbe2d -lm
-./lbe2d
+gcc -std=c99 -O3 lbe2d_forceshift.c -o lbe2d_forceshift -lm
+./lbe2d_forceshift
 
 #set t = 0
 

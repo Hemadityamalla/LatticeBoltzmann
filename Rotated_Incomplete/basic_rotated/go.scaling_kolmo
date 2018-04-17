@@ -1,0 +1,31 @@
+#!/bin/tcsh
+
+\rm scaling_kolmo
+
+#if [ -e Production_POISEUILLE ]
+#then
+#	echo "Previous run files being deleted"
+#	rm -rf Production_*
+#else
+#	echo "No Previous files"
+#fi
+
+rm lbe2d
+cc -O3 lbe2d.c -o lbe2d -lm
+./lbe2d
+
+set t = 0
+
+while ( $t < 6500 )
+
+awk -f amp_kolmo.awk Production_KOLMOGOROV/vel.$t > amp
+
+tail -1 amp | awk '{print $1}' >> scaling_kolmo
+
+@ t = $t + 500
+
+end
+
+\rm amp
+gnuplot scaling_kolmo.gnu
+open scaling.eps

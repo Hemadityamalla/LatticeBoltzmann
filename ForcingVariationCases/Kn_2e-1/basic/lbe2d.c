@@ -50,8 +50,8 @@ typedef struct {
   double vx, vy;
 } velocity;
 
-#define ff 4.87e-8//0.00005
-#define tau 35.15//0.666
+#define ff 1e-6
+#define tau 9.34465
 
 //#define KOLMO
 
@@ -59,7 +59,7 @@ typedef struct {
 #define MAX_STEP 1000000
 
 #define NX 20
-#define NY 40
+#define NY 32
 #define Uo 1.0 //Only used for kolmogorov
 
 
@@ -434,7 +434,7 @@ void write_pop(int tstep)
   /*Here dumps the velprofile in x direction field */
   sprintf(fname,"%s/velprofilekolmo.%d",OutDir,tstep);
   fout = fopen(fname,"w");
-  int yval = 13;
+  int yval = 10;
     for (x=1; x<NX+1; x++){
       double tvx,tvy;
       tvx = vx(p[yval][x])/m(p[yval][x]);
@@ -511,7 +511,7 @@ int main(int argc, char** argv)
       fprintf(ferr,"%d %g\n",i,error);
       fflush(ferr);
 
-      if ((error < 10e-16) && (i!=0)) {
+      if ((error < 10e-20) && (i!=0)) {
         fprintf(stderr,"Run termalized\n");
 	exit(1);
       }
